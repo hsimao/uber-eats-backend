@@ -7,8 +7,8 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
+import { JwtModule } from './jwt/jwt.module';
 
-console.log(Joi);
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,7 +21,8 @@ console.log(Joi);
         DB_PORT: Joi.string().required(),
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
-        DB_NAME: Joi.string().required()
+        DB_NAME: Joi.string().required(),
+        JWT_PRIVATE_KEY: Joi.string().required()
       })
     }),
     TypeOrmModule.forRoot({
@@ -38,6 +39,9 @@ console.log(Joi);
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true
+    }),
+    JwtModule.forRoot({
+      privateKey: process.env.JWT_PRIVATE_KEY
     }),
     UsersModule,
     CommonModule
