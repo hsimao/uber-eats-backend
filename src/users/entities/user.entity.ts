@@ -1,8 +1,20 @@
-import { Field, ObjectType, InputType } from '@nestjs/graphql';
+import {
+  Field,
+  ObjectType,
+  InputType,
+  registerEnumType
+} from '@nestjs/graphql';
 import { Column, Entity } from 'typeorm';
 import { CoreEntity } from '../../common/entities/core.entity';
 
-type UserRole = 'client' | 'owner' | 'delivery';
+enum UserRole {
+  Owner,
+  Client,
+  Delivery
+}
+
+// 將 UserRole enum 註冊到 graphql 上, playground 才會正常顯示
+registerEnumType(UserRole, { name: 'UserRole' });
 
 @InputType({ isAbstract: true })
 @ObjectType()
@@ -16,7 +28,7 @@ export class User extends CoreEntity {
   @Field(type => String)
   password: string;
 
-  @Column()
-  @Field(type => String)
+  @Column({ type: 'enum', enum: UserRole })
+  @Field(type => UserRole) // enum type 需要透過 registerEnumType 註冊才能使用
   role: UserRole;
 }
