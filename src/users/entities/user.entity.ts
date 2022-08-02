@@ -4,8 +4,10 @@ import {
   InputType,
   registerEnumType
 } from '@nestjs/graphql';
-import { Column, Entity } from 'typeorm';
+import { BeforeInsert, Column, Entity } from 'typeorm';
 import { CoreEntity } from '../../common/entities/core.entity';
+import * as bcrypt from 'bcrypt';
+import { InternalServerErrorException } from '@nestjs/common';
 
 enum UserRole {
   Owner,
@@ -31,4 +33,15 @@ export class User extends CoreEntity {
   @Column({ type: 'enum', enum: UserRole })
   @Field(type => UserRole) // enum type 需要透過 registerEnumType 註冊才能使用
   role: UserRole;
+
+  // 儲存到 DB 前先加密 password
+  @BeforeInsert()
+  async hashPassword(): Promise<void> {
+    try {
+      this.password = await bcrypt.hash(this.password, 10);
+    } catch (err) {
+      console.log(err);
+      throw new InternalServerErrorException();
+    }
+  }
 }
