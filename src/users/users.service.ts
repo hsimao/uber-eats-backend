@@ -56,4 +56,8 @@ export class UsersService {
       return { ok: false, error };
     }
   }
+
+  findById(id: number): Promise<User> {
+    return this.users.findOneBy({ id });
+  }
 }
