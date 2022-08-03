@@ -8,14 +8,15 @@ import {
 } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import { AuthUser } from '../auth/auth-user.decorator';
 @Resolver(of => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Query(returns => User)
   @UseGuards(AuthGuard)
-  me(@Context() content) {
-    return content.user;
+  me(@AuthUser() authUser: User) {
+    return authUser;
   }
 
   @Mutation(returns => CreateAccountOutput)
