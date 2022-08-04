@@ -37,6 +37,10 @@ export class User extends CoreEntity {
   @IsEnum(UserRole)
   role: UserRole;
 
+  @Column({ default: false })
+  @Field(type => Boolean)
+  verified: boolean;
+
   // 儲存到 DB 前先加密 password
   @BeforeInsert()
   @BeforeUpdate()
