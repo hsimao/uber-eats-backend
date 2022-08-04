@@ -8,6 +8,7 @@ import {
   CreateAccountOutput,
   CreateAccountInput,
   EditProfileOutput,
+  EditProfileInput,
   UserProfileInput,
   UserProfileOutput
 } from './dtos';
@@ -38,9 +39,20 @@ export class UsersResolver {
     }
   }
 
-  // 編輯用戶資料
+  // 編輯自己(當前登入)的用戶資料
   @UseGuards(AuthGuard)
   @Mutation(returns => EditProfileOutput)
+  async editProfile(
+    @AuthUser() authUser,
+    @Args('input') editProfileInput: EditProfileInput
+  ): Promise<EditProfileOutput> {
+    try {
+      await this.usersService.editProfile(authUser.id, editProfileInput);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error };
+    }
+  }
 
   // 創建帳號
   @Mutation(returns => CreateAccountOutput)

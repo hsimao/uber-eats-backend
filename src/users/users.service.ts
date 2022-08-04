@@ -1,8 +1,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { CreateAccountInput } from './dtos/create-account.dto';
-import { LoginInput } from './dtos/login.dto';
+import { LoginInput, CreateAccountInput, EditProfileInput } from './dtos';
 import { JwtService } from '../jwt/jwt.service';
 
 export class UsersService {
@@ -59,5 +58,16 @@ export class UsersService {
 
   findById(id: number): Promise<User> {
     return this.users.findOneBy({ id });
+  }
+
+  // 編輯用戶資料
+  async editProfile(userId: number, { email, password }: EditProfileInput) {
+    const user = await this.findById(userId);
+
+    if (email) user.email = email;
+    if (password) user.password = password;
+
+    // 使用 save 才會觸發 BeforeUpdate hook, 進行 hash password
+    return this.users.save(user);
   }
 }
