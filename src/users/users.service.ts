@@ -1,12 +1,14 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, Verification } from './entities';
 import { LoginInput, CreateAccountInput, EditProfileInput } from './dtos';
 import { JwtService } from '../jwt/jwt.service';
 
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(Verification)
+    private readonly verification: Repository<Verification>,
     private readonly jwtService: JwtService
   ) {}
 
@@ -23,7 +25,13 @@ export class UsersService {
         return { ok: false, error: 'There is a user with that email already' };
       }
 
-      await this.users.save(this.users.create({ email, password, role }));
+      const user = await this.users.save(
+        this.users.create({ email, password, role })
+      );
+
+      // 創建驗證碼
+      const verification = await this.verification.create({ user });
+      await this.verification.save(verification);
       return { ok: true };
     } catch (err) {
       console.log(err);
@@ -64,7 +72,14 @@ export class UsersService {
   async editProfile(userId: number, { email, password }: EditProfileInput) {
     const user = await this.findById(userId);
 
-    if (email) user.email = email;
+    if (email) {
+      user.email = email;
+
+      // 修改 email 需重置驗證碼
+      user.verified = false;
+      const verification = await this.verification.create({ user });
+      await this.verification.save(verification);
+    }
     if (password) user.password = password;
 
     // 使用 save 才會觸發 BeforeUpdate hook, 進行 hash password
