@@ -12,7 +12,8 @@ export class Verification extends CoreEntity {
   @Field(type => String)
   code: string;
 
-  @OneToOne(type => User)
+  // 設定 onDelete: 'CASCADE', 當用戶被刪除時, 關聯的驗證碼也會一同刪除
+  @OneToOne(type => User, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 

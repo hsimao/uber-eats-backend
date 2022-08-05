@@ -10,7 +10,9 @@ import {
   EditProfileOutput,
   EditProfileInput,
   UserProfileInput,
-  UserProfileOutput
+  UserProfileOutput,
+  VerifyEmailOutput,
+  VerifyEmailInput
 } from './dtos';
 import { AuthGuard } from '../auth/auth.guard';
 import { AuthUser } from '../auth/auth-user.decorator';
@@ -71,6 +73,18 @@ export class UsersResolver {
   async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
     try {
       return this.usersService.login(loginInput);
+    } catch (error) {
+      return { ok: false, error };
+    }
+  }
+
+  @Mutation(returns => VerifyEmailOutput)
+  async verifyEmail(
+    @Args('input') { code }: VerifyEmailInput
+  ): Promise<VerifyEmailOutput> {
+    try {
+      await this.usersService.verifyEmail(code);
+      return { ok: true };
     } catch (error) {
       return { ok: false, error };
     }

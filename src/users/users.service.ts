@@ -45,7 +45,11 @@ export class UsersService {
   }: LoginInput): Promise<{ ok: boolean; error?: string; token?: string }> {
     try {
       // find the user with the email
-      const user = await this.users.findOneBy({ email });
+      const user = await this.users.findOne({
+        where: { email },
+        select: ['id', 'password'] // 因為預設 password 設定 false, 若需要取得需要在此設定
+      });
+
       if (!user) {
         return { ok: false, error: 'User not found' };
       }
@@ -84,5 +88,22 @@ export class UsersService {
 
     // 使用 save 才會觸發 BeforeUpdate hook, 進行 hash password
     return this.users.save(user);
+  }
+
+  async verifyEmail(code: string): Promise<boolean> {
+    try {
+      const verification = await this.verification.findOne({
+        where: { code },
+        relations: ['user']
+      });
+      if (verification) {
+        verification.user.verified = true;
+        this.users.save(verification.user);
+        return true;
+      }
+      throw new Error();
+    } catch (err) {
+      return false;
+    }
   }
 }
