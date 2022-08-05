@@ -96,8 +96,9 @@ export class UsersService {
       if (email) {
         user.email = email;
 
-        // 修改 email 需重置驗證碼
+        // 修改 email 需重置驗證碼, 刪除後重新創建
         user.verified = false;
+        await this.verification.delete({ user: { id: user.id } });
         const verification = await this.verification.create({ user });
         await this.verification.save(verification);
       }
@@ -119,7 +120,8 @@ export class UsersService {
       });
       if (verification) {
         verification.user.verified = true;
-        this.users.save(verification.user);
+        await this.users.save(verification.user);
+        await this.verification.delete(verification.id);
         return { ok: true };
       }
       return { ok: false, error: 'Verification not found.' };
