@@ -30,63 +30,40 @@ export class UsersResolver {
   // 取得指定用戶資料 by Id
   @UseGuards(AuthGuard)
   @Query(returns => UserProfileOutput)
-  async userProfile(
+  userProfile(
     @Args() userProfileInput: UserProfileInput
   ): Promise<UserProfileOutput> {
-    try {
-      const user = await this.usersService.findById(userProfileInput.userId);
-      return { ok: Boolean(user), user };
-    } catch (err) {
-      return { ok: false, error: 'User Not Found' };
-    }
+    return this.usersService.findById(userProfileInput.userId);
   }
 
   // 編輯自己(當前登入)的用戶資料
   @UseGuards(AuthGuard)
   @Mutation(returns => EditProfileOutput)
-  async editProfile(
+  editProfile(
     @AuthUser() authUser,
     @Args('input') editProfileInput: EditProfileInput
   ): Promise<EditProfileOutput> {
-    try {
-      await this.usersService.editProfile(authUser.id, editProfileInput);
-      return { ok: true };
-    } catch (error) {
-      return { ok: false, error };
-    }
+    return this.usersService.editProfile(authUser.id, editProfileInput);
   }
 
   // 創建帳號
   @Mutation(returns => CreateAccountOutput)
-  async createAccount(
+  createAccount(
     @Args('input') createAccountInput: CreateAccountInput
   ): Promise<CreateAccountOutput> {
-    try {
-      return this.usersService.createAccount(createAccountInput);
-    } catch (error) {
-      return { ok: false, error };
-    }
+    return this.usersService.createAccount(createAccountInput);
   }
 
   // 登入
   @Mutation(returns => LoginOutput)
-  async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
-    try {
-      return this.usersService.login(loginInput);
-    } catch (error) {
-      return { ok: false, error };
-    }
+  login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
+    return this.usersService.login(loginInput);
   }
 
   @Mutation(returns => VerifyEmailOutput)
-  async verifyEmail(
+  verifyEmail(
     @Args('input') { code }: VerifyEmailInput
   ): Promise<VerifyEmailOutput> {
-    try {
-      await this.usersService.verifyEmail(code);
-      return { ok: true };
-    } catch (error) {
-      return { ok: false, error };
-    }
+    return this.usersService.verifyEmail(code);
   }
 }
