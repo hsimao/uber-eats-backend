@@ -30,7 +30,7 @@ export class UsersService {
   }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
       // 檢查 email 是否已經存在
-      const exists = this.userIsExistsByEmail(email);
+      const exists = await this.userIsExistsByEmail(email);
       if (exists) {
         return { ok: false, error: 'There is a user with that email already' };
       }
@@ -52,7 +52,6 @@ export class UsersService {
 
       return { ok: true };
     } catch (err) {
-      console.log('error', err);
       return { ok: false, error: "Couldn't create account" };
     }
   }
@@ -112,7 +111,6 @@ export class UsersService {
   ): Promise<EditProfileOutput> {
     try {
       const { user } = await this.findById(userId);
-
       if (user.email) {
         // 檢查修改的 email 是否已經存在
         const exists = this.userIsExistsByEmail(email);
