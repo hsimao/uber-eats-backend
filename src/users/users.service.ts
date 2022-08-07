@@ -12,13 +12,15 @@ import {
   VerifyEmailOutput
 } from './dtos';
 import { JwtService } from '../jwt/jwt.service';
+import { EmailService } from './../email/email.service';
 
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(Verification)
     private readonly verification: Repository<Verification>,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly emailService: EmailService
   ) {}
 
   async createAccount({
@@ -41,6 +43,14 @@ export class UsersService {
       // 創建驗證碼
       const verification = await this.verification.create({ user });
       await this.verification.save(verification);
+
+      // 發送驗證碼到 email
+      this.emailService.sendVerificationEmail(
+        user.email,
+        'Mars', // 尚未有 user name 暫時先寫死
+        verification.code
+      );
+
       return { ok: true };
     } catch (err) {
       return { ok: false, error: "Couldn't create account" };
@@ -101,6 +111,13 @@ export class UsersService {
         await this.verification.delete({ user: { id: user.id } });
         const verification = await this.verification.create({ user });
         await this.verification.save(verification);
+
+        // 發送驗證碼到 email
+        this.emailService.sendVerificationEmail(
+          user.email,
+          'Mars', // 尚未有 user name 暫時先寫死
+          verification.code
+        );
       }
       if (password) user.password = password;
 
