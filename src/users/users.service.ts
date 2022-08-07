@@ -30,8 +30,7 @@ export class UsersService {
   }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
       // 檢查 email 是否已經存在
-      const exists = await this.users.findOneBy({ email });
-
+      const exists = this.userIsExistsByEmail(email);
       if (exists) {
         return { ok: false, error: 'There is a user with that email already' };
       }
@@ -53,7 +52,18 @@ export class UsersService {
 
       return { ok: true };
     } catch (err) {
+      console.log('error', err);
       return { ok: false, error: "Couldn't create account" };
+    }
+  }
+
+  // 檢查 email 是否已經存在
+  async userIsExistsByEmail(email: string): Promise<boolean> {
+    try {
+      const exists = await this.users.findOne({ where: { email } });
+      return !!exists;
+    } catch (error) {
+      return true;
     }
   }
 
@@ -85,7 +95,7 @@ export class UsersService {
 
   async findById(id: number): Promise<UserProfileOutput> {
     try {
-      const user = await this.users.findOneBy({ id });
+      const user = await this.users.findOne({ where: { id } });
       return {
         ok: true,
         user
@@ -101,9 +111,18 @@ export class UsersService {
     { email, password }: EditProfileInput
   ): Promise<EditProfileOutput> {
     try {
-      const user = await this.users.findOneBy({ id: userId });
+      const { user } = await this.findById(userId);
 
-      if (email) {
+      if (user.email) {
+        // 檢查修改的 email 是否已經存在
+        const exists = this.userIsExistsByEmail(email);
+        if (exists) {
+          return {
+            ok: false,
+            error: 'There is a user with that email already'
+          };
+        }
+
         user.email = email;
 
         // 修改 email 需重置驗證碼, 刪除後重新創建
