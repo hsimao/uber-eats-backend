@@ -10,11 +10,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UsersModule } from './users/users.module';
+
 import { User, Verification } from './users/entities';
 import { Category, Restaurant } from './restaurants/entities';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { EmailModule } from './email/email.module';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 
 @Module({
   imports: [
@@ -60,7 +62,8 @@ import { EmailModule } from './email/email.module';
       domain: process.env.EMAIL_DOMAIN_NAME,
       fromEmail: process.env.EMAIL_FROM
     }),
-    UsersModule
+    UsersModule,
+    RestaurantsModule
   ],
   controllers: [],
   providers: []

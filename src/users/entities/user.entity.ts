@@ -1,10 +1,11 @@
+import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import {
   Field,
   ObjectType,
   InputType,
   registerEnumType
 } from '@nestjs/graphql';
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import { CoreEntity } from '../../common/entities/core.entity';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
@@ -19,7 +20,7 @@ enum UserRole {
 // 將 UserRole enum 註冊到 graphql 上, playground 才會正常顯示
 registerEnumType(UserRole, { name: 'UserRole' });
 
-@InputType({ isAbstract: true })
+@InputType('UserInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class User extends CoreEntity {
@@ -42,6 +43,11 @@ export class User extends CoreEntity {
   @Field(type => Boolean)
   @IsBoolean()
   verified: boolean;
+
+  // 關聯自己創建的餐廳
+  @Field(type => [Restaurant])
+  @OneToMany(type => Restaurant, restaurant => restaurant.owner)
+  restaurants: Restaurant[];
 
   // 儲存到 DB 前先加密 password
   @BeforeInsert()
