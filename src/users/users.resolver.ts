@@ -1,5 +1,5 @@
+import { Role } from './../auth/role.decorator';
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import {
@@ -14,7 +14,6 @@ import {
   VerifyEmailOutput,
   VerifyEmailInput
 } from './dtos';
-import { AuthGuard } from '../auth/auth.guard';
 import { AuthUser } from '../auth/auth-user.decorator';
 @Resolver(of => User)
 export class UsersResolver {
@@ -22,14 +21,14 @@ export class UsersResolver {
 
   // 取得當前登入 user 資料
   @Query(returns => User)
-  @UseGuards(AuthGuard)
+  @Role(['Any'])
   me(@AuthUser() authUser: User) {
     return authUser;
   }
 
   // 取得指定用戶資料 by Id
-  @UseGuards(AuthGuard)
   @Query(returns => UserProfileOutput)
+  @Role(['Any'])
   userProfile(
     @Args() userProfileInput: UserProfileInput
   ): Promise<UserProfileOutput> {
@@ -37,8 +36,8 @@ export class UsersResolver {
   }
 
   // 編輯自己(當前登入)的用戶資料
-  @UseGuards(AuthGuard)
   @Mutation(returns => EditProfileOutput)
+  @Role(['Any'])
   editProfile(
     @AuthUser() authUser,
     @Args('input') editProfileInput: EditProfileInput

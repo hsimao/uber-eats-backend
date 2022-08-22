@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { User, Verification } from './users/entities';
 import { Category, Restaurant } from './restaurants/entities';
@@ -50,8 +51,13 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
-      // 將在中間件儲存進去的 req.user 資料傳遞到 GraphQL content 內
-      context: ({ req }) => ({ user: req['user'] })
+      context: ({ req, connection }) => {
+        const TOKEN_KEY = 'x-jwt';
+        return {
+          user: req['user'],
+          token: req ? req.headers[TOKEN_KEY] : connection.context[TOKEN_KEY]
+        };
+      }
     }),
     JwtModule.forRoot({
       privateKey: process.env.JWT_PRIVATE_KEY
@@ -61,18 +67,11 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
       domain: process.env.EMAIL_DOMAIN_NAME,
       fromEmail: process.env.EMAIL_FROM
     }),
+    AuthModule,
     UsersModule,
     RestaurantsModule
   ],
   controllers: [],
   providers: []
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    // jwt 中間件
-    consumer.apply(JwtMiddleware).forRoutes({
-      path: '/graphql',
-      method: RequestMethod.ALL
-    });
-  }
-}
+export class AppModule {}
