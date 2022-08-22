@@ -7,12 +7,14 @@ import {
 } from './dtos/create-restaurant.dto';
 import { RestaurantService } from './restaurants.service';
 import { AuthUser } from '../auth/auth-user.decorator';
+import { Role } from '../auth/role.decorator';
 
 @Resolver(of => Restaurant)
 export class RestaurantResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
   @Mutation(returns => CreateRestaurantOutput)
+  @Role(['Owner'])
   async createRestaurant(
     @AuthUser()
     authUser: User,

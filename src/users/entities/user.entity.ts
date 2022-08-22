@@ -11,10 +11,10 @@ import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 
-enum UserRole {
-  Owner,
-  Client,
-  Delivery
+export enum UserRole {
+  Owner = 'Owner',
+  Client = 'Client',
+  Delivery = 'Delivery'
 }
 
 // 將 UserRole enum 註冊到 graphql 上, playground 才會正常顯示
