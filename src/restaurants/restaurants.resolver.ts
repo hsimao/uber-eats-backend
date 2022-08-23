@@ -5,6 +5,10 @@ import {
   CreateRestaurantInput,
   CreateRestaurantOutput
 } from './dtos/create-restaurant.dto';
+import {
+  EditRestaurantOutput,
+  EditRestaurantInput
+} from './dtos/edit-restaurant.dto';
 import { RestaurantService } from './restaurants.service';
 import { AuthUser } from '../auth/auth-user.decorator';
 import { Role } from '../auth/role.decorator';
@@ -25,5 +29,14 @@ export class RestaurantResolver {
       authUser,
       createRestaurantInput
     );
+  }
+
+  @Role(['Owner'])
+  @Mutation(returns => EditRestaurantOutput)
+  editRestaurant(
+    @AuthUser() owner: User,
+    @Args('input') editRestaurantInput: EditRestaurantInput
+  ): Promise<EditRestaurantOutput> {
+    return this.restaurantService.editRestaurant(owner, editRestaurantInput);
   }
 }
