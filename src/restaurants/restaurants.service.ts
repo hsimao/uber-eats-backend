@@ -1,16 +1,17 @@
+import { CoreOutput } from './../common/dtos/output.dto';
+import {
+  CreateRestaurantInput,
+  CreateRestaurantOutput,
+  EditRestaurantInput,
+  EditRestaurantOutput,
+  DeleteRestaurantInput,
+  DeleteRestaurantOutput
+} from './dtos';
 import { User } from './../users/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Restaurant, Category } from './entities';
-import {
-  CreateRestaurantInput,
-  CreateRestaurantOutput
-} from './dtos/create-restaurant.dto';
-import {
-  EditRestaurantInput,
-  EditRestaurantOutput
-} from './dtos/edit-restaurant.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -41,6 +42,31 @@ export class RestaurantService {
     return category;
   }
 
+  async checkRestaurantAndOwner(
+    restaurantId: number,
+    ownerId: number
+  ): Promise<CoreOutput> {
+    const restaurant = await this.restaurants.findOne({
+      where: { id: restaurantId },
+      loadRelationIds: true
+    });
+
+    // 未找到
+    if (!restaurant) {
+      return { ok: false, error: 'Restaurant not found' };
+    }
+
+    // 非餐廳擁有者
+    if (ownerId !== restaurant.ownerId) {
+      return {
+        ok: false,
+        error: "You can't edit a restaurant that you don't own."
+      };
+    }
+
+    return { ok: true };
+  }
+
   async createRestaurant(
     owner: User,
     createRestaurantInput: CreateRestaurantInput
@@ -67,23 +93,13 @@ export class RestaurantService {
     editRestaurantInput: EditRestaurantInput
   ): Promise<EditRestaurantOutput> {
     try {
-      const restaurant = await this.restaurants.findOne({
-        where: { id: editRestaurantInput.restaurantId },
-        loadRelationIds: true
-      });
+      const restaurantId = editRestaurantInput.restaurantId;
+      const { ok, error } = await this.checkRestaurantAndOwner(
+        restaurantId,
+        owner.id
+      );
 
-      // 未找到
-      if (!restaurant) {
-        return { ok: false, error: 'Restaurant not found' };
-      }
-
-      // 非餐廳擁有者
-      if (owner.id !== restaurant.ownerId) {
-        return {
-          ok: false,
-          error: "You can't edit a restaurant that you don't own."
-        };
-      }
+      if (!ok) return { ok, error };
 
       // 如果有輸入類型
       let category: Category = null;
@@ -93,7 +109,7 @@ export class RestaurantService {
       }
 
       const newRestaurantData = {
-        id: editRestaurantInput.restaurantId,
+        id: restaurantId,
         ...editRestaurantInput,
         ...(category && { category }) // 若沒有 category 則不會新增
       };
@@ -103,6 +119,26 @@ export class RestaurantService {
       return { ok: true };
     } catch (error) {
       return { ok: false, error: 'Could not edit Restaurant' };
+    }
+  }
+
+  async deleteRestaurant(
+    owner: User,
+    deleteRestaurantInput: DeleteRestaurantInput
+  ): Promise<DeleteRestaurantOutput> {
+    try {
+      const restaurantId = deleteRestaurantInput.restaurantId;
+      const { ok, error } = await this.checkRestaurantAndOwner(
+        restaurantId,
+        owner.id
+      );
+
+      if (!ok) return { ok, error };
+
+      await this.restaurants.delete(restaurantId);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error: 'Could not delete restaurant.' };
     }
   }
 }

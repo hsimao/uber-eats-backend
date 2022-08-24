@@ -3,12 +3,12 @@ import { User } from './../users/entities/user.entity';
 import { Restaurant } from './entities/restaurant.entity';
 import {
   CreateRestaurantInput,
-  CreateRestaurantOutput
-} from './dtos/create-restaurant.dto';
-import {
+  CreateRestaurantOutput,
   EditRestaurantOutput,
-  EditRestaurantInput
-} from './dtos/edit-restaurant.dto';
+  EditRestaurantInput,
+  DeleteRestaurantInput,
+  DeleteRestaurantOutput
+} from './dtos';
 import { RestaurantService } from './restaurants.service';
 import { AuthUser } from '../auth/auth-user.decorator';
 import { Role } from '../auth/role.decorator';
@@ -31,12 +31,24 @@ export class RestaurantResolver {
     );
   }
 
-  @Role(['Owner'])
   @Mutation(returns => EditRestaurantOutput)
+  @Role(['Owner'])
   editRestaurant(
     @AuthUser() owner: User,
     @Args('input') editRestaurantInput: EditRestaurantInput
   ): Promise<EditRestaurantOutput> {
     return this.restaurantService.editRestaurant(owner, editRestaurantInput);
+  }
+
+  @Mutation(returns => DeleteRestaurantOutput)
+  @Role(['Owner'])
+  deleteRestaurant(
+    @AuthUser() owner: User,
+    @Args('input') deleteRestaurantInput: DeleteRestaurantInput
+  ): Promise<DeleteRestaurantOutput> {
+    return this.restaurantService.deleteRestaurant(
+      owner,
+      deleteRestaurantInput
+    );
   }
 }
