@@ -5,7 +5,8 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
   DeleteRestaurantInput,
-  DeleteRestaurantOutput
+  DeleteRestaurantOutput,
+  AllCategoriesOutput
 } from './dtos';
 import { User } from './../users/entities/user.entity';
 import { Injectable } from '@nestjs/common';
@@ -139,6 +140,17 @@ export class RestaurantService {
       return { ok: true };
     } catch (error) {
       return { ok: false, error: 'Could not delete restaurant.' };
+    }
+  }
+
+  async allCategories(): Promise<AllCategoriesOutput> {
+    try {
+      const categories = await this.categories.find({
+        relations: ['restaurants']
+      });
+      return { ok: true, categories };
+    } catch (error) {
+      return { ok: false, error: 'Could not load categories' };
     }
   }
 }
