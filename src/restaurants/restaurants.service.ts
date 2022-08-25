@@ -153,4 +153,9 @@ export class RestaurantService {
       return { ok: false, error: 'Could not load categories' };
     }
   }
+
+  // 取出相同類型的餐廳數量
+  countRestaurant(category: Category) {
+    return this.restaurants.count({ where: { category: { id: category.id } } });
+  }
 }
