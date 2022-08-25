@@ -1,5 +1,12 @@
 import { Category } from './entities/category.entity';
-import { Query, Args, Mutation, Resolver, ResolveField } from '@nestjs/graphql';
+import {
+  Query,
+  Args,
+  Mutation,
+  Resolver,
+  ResolveField,
+  Parent
+} from '@nestjs/graphql';
 import { User } from './../users/entities/user.entity';
 import { Restaurant } from './entities/restaurant.entity';
 import {
@@ -60,8 +67,8 @@ export class CategoryResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
   @ResolveField(type => Number)
-  restaurantCount(): Number {
-    return 80;
+  restaurantCount(@Parent() category: Category): Number {
+    return category.restaurants.length;
   }
 
   @Query(type => AllCategoriesOutput)
