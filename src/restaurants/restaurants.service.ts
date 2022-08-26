@@ -7,7 +7,8 @@ import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
   AllCategoriesOutput,
-  CategoryInput
+  CategoryInput,
+  CategoryOutput
 } from './dtos';
 import { User } from './../users/entities/user.entity';
 import { Injectable } from '@nestjs/common';
@@ -160,16 +161,33 @@ export class RestaurantService {
     return this.restaurants.count({ where: { category: { id: category.id } } });
   }
 
-  async findCategoryBySlug({ slug }: CategoryInput) {
+  // 依據類型取得餐廳資料
+  async findCategoryBySlug({
+    slug,
+    page
+  }: CategoryInput): Promise<CategoryOutput> {
     try {
-      const category = await this.categories.findOne({
-        where: { slug },
-        relations: ['restaurants']
-      });
+      const category = await this.categories.findOne({ where: { slug } });
 
       if (!category) return { ok: false, error: 'Category not found' };
+      // 餐廳分頁
+      const restaurants = await this.restaurants.find({
+        where: { category: { id: category.id } },
+        // 筆數
+        take: 25,
+        // 開始抓取資料的起始位置
+        skip: (page - 1) * 25
+      });
 
-      return { ok: true, category };
+      category.restaurants = restaurants;
+
+      // 全部餐廳數量
+      const totalResults = await this.countRestaurant(category);
+
+      // 總頁數, 無條件進位
+      const totalPages = Math.ceil(totalResults / 25);
+
+      return { ok: true, category, totalPages };
     } catch (error) {
       return { ok: false, error: 'Colud not load category' };
     }
