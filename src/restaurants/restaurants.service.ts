@@ -6,7 +6,8 @@ import {
   EditRestaurantOutput,
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
-  AllCategoriesOutput
+  AllCategoriesOutput,
+  CategoryInput
 } from './dtos';
 import { User } from './../users/entities/user.entity';
 import { Injectable } from '@nestjs/common';
@@ -157,5 +158,20 @@ export class RestaurantService {
   // 取出相同類型的餐廳數量
   countRestaurant(category: Category) {
     return this.restaurants.count({ where: { category: { id: category.id } } });
+  }
+
+  async findCategoryBySlug({ slug }: CategoryInput) {
+    try {
+      const category = await this.categories.findOne({
+        where: { slug },
+        relations: ['restaurants']
+      });
+
+      if (!category) return { ok: false, error: 'Category not found' };
+
+      return { ok: true, category };
+    } catch (error) {
+      return { ok: false, error: 'Colud not load category' };
+    }
   }
 }
