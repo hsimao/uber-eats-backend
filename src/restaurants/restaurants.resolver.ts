@@ -10,6 +10,8 @@ import {
 import { User } from './../users/entities/user.entity';
 import { Restaurant } from './entities/restaurant.entity';
 import {
+  RestaurantsOutput,
+  RestaurantsInput,
   CreateRestaurantInput,
   CreateRestaurantOutput,
   EditRestaurantOutput,
@@ -61,6 +63,13 @@ export class RestaurantResolver {
       owner,
       deleteRestaurantInput
     );
+  }
+
+  @Query(returns => RestaurantsOutput)
+  restaurants(
+    @Args('input') restaurantsInput: RestaurantsInput
+  ): Promise<RestaurantsOutput> {
+    return this.restaurantService.allRestaurants(restaurantsInput);
   }
 }
 

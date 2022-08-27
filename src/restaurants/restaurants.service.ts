@@ -1,5 +1,7 @@
 import { CoreOutput } from './../common/dtos/output.dto';
 import {
+  RestaurantsOutput,
+  RestaurantsInput,
   CreateRestaurantInput,
   CreateRestaurantOutput,
   EditRestaurantInput,
@@ -164,7 +166,8 @@ export class RestaurantService {
   // 依據類型取得餐廳資料
   async findCategoryBySlug({
     slug,
-    page
+    page,
+    limit
   }: CategoryInput): Promise<CategoryOutput> {
     try {
       const category = await this.categories.findOne({ where: { slug } });
@@ -174,9 +177,9 @@ export class RestaurantService {
       const restaurants = await this.restaurants.find({
         where: { category: { id: category.id } },
         // 筆數
-        take: 25,
+        take: limit,
         // 開始抓取資料的起始位置
-        skip: (page - 1) * 25
+        skip: (page - 1) * limit
       });
 
       category.restaurants = restaurants;
@@ -185,11 +188,31 @@ export class RestaurantService {
       const totalResults = await this.countRestaurant(category);
 
       // 總頁數, 無條件進位
-      const totalPages = Math.ceil(totalResults / 25);
+      const totalPages = Math.ceil(totalResults / limit);
 
       return { ok: true, category, totalPages };
     } catch (error) {
       return { ok: false, error: 'Colud not load category' };
+    }
+  }
+
+  // 所有餐廳
+  async allRestaurants({
+    page,
+    limit
+  }: RestaurantsInput): Promise<RestaurantsOutput> {
+    try {
+      const [restaurants, totalResults] = await this.restaurants.findAndCount({
+        take: limit,
+        skip: (page - 1) * limit
+      });
+
+      // 總頁數
+      const totalPages = Math.ceil(totalResults / limit);
+
+      return { ok: true, results: restaurants, totalPages, totalResults };
+    } catch {
+      return { ok: false, error: 'Could not load restaurants' };
     }
   }
 }
