@@ -14,6 +14,8 @@ import {
   RestaurantsInput,
   RestaurantInput,
   RestaurantOutput,
+  SearchRestaurantOutput,
+  SearchRestaurantInput,
   CreateRestaurantInput,
   CreateRestaurantOutput,
   EditRestaurantOutput,
@@ -85,6 +87,14 @@ export class RestaurantResolver {
     @Args('input') restaurantInput: RestaurantInput
   ): Promise<RestaurantOutput> {
     return this.restaurantService.findRestaurantById(restaurantInput);
+  }
+
+  // 搜尋餐廳 by query => name
+  @Query(returns => SearchRestaurantOutput)
+  searchRestaurant(
+    @Args('input') searchRestaurantInput: SearchRestaurantInput
+  ): Promise<SearchRestaurantOutput> {
+    return this.restaurantService.searchRestaurantByName(searchRestaurantInput);
   }
 }
 

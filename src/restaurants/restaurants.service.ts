@@ -4,6 +4,8 @@ import {
   RestaurantsInput,
   RestaurantOutput,
   RestaurantInput,
+  SearchRestaurantOutput,
+  SearchRestaurantInput,
   CreateRestaurantInput,
   CreateRestaurantOutput,
   EditRestaurantInput,
@@ -17,7 +19,7 @@ import {
 import { User } from './../users/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { Restaurant, Category } from './entities';
 
 @Injectable()
@@ -224,7 +226,7 @@ export class RestaurantService {
     }
   }
 
-  // 搜尋餐廳
+  // 搜尋餐廳 by id
   async findRestaurantById({
     restaurantId
   }: RestaurantInput): Promise<RestaurantOutput> {
@@ -240,6 +242,33 @@ export class RestaurantService {
       return { ok: true, restaurant };
     } catch {
       return { ok: false, error: 'Could not find restaurant' };
+    }
+  }
+
+  // 搜尋餐廳 by name
+  async searchRestaurantByName({
+    query,
+    page,
+    limit
+  }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
+    try {
+      const [restaurants, totalResults] = await this.restaurants.findAndCount({
+        where: { name: Raw(name => `${name} ILIKE '%${query}%'`) },
+        take: limit,
+        skip: (page - 1) * limit
+      });
+
+      // 總頁數
+      const totalPages = Math.ceil(totalResults / limit);
+
+      return {
+        ok: true,
+        restaurants,
+        totalResults,
+        totalPages
+      };
+    } catch {
+      return { ok: false, error: 'Could not search for restaurants' };
     }
   }
 }
