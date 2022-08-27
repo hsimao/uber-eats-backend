@@ -2,6 +2,8 @@ import { CoreOutput } from './../common/dtos/output.dto';
 import {
   RestaurantsOutput,
   RestaurantsInput,
+  RestaurantOutput,
+  RestaurantInput,
   CreateRestaurantInput,
   CreateRestaurantOutput,
   EditRestaurantInput,
@@ -27,6 +29,7 @@ export class RestaurantService {
     private readonly categories: Repository<Category>
   ) {}
 
+  // 取得分類, 若未存在自動新增
   async getOrCreateCategory(name: string): Promise<Category> {
     const categoryName = name.trim().toLowerCase();
 
@@ -47,6 +50,7 @@ export class RestaurantService {
     return category;
   }
 
+  // 檢查餐廳是否存在、並是否是餐廳擁有者
   async checkRestaurantAndOwner(
     restaurantId: number,
     ownerId: number
@@ -72,6 +76,7 @@ export class RestaurantService {
     return { ok: true };
   }
 
+  // 新增餐廳
   async createRestaurant(
     owner: User,
     createRestaurantInput: CreateRestaurantInput
@@ -93,6 +98,7 @@ export class RestaurantService {
     }
   }
 
+  // 編輯餐廳
   async editRestaurant(
     owner: User,
     editRestaurantInput: EditRestaurantInput
@@ -127,6 +133,7 @@ export class RestaurantService {
     }
   }
 
+  // 刪除餐廳
   async deleteRestaurant(
     owner: User,
     deleteRestaurantInput: DeleteRestaurantInput
@@ -147,6 +154,7 @@ export class RestaurantService {
     }
   }
 
+  // 取得所有分類
   async allCategories(): Promise<AllCategoriesOutput> {
     try {
       const categories = await this.categories.find({
@@ -213,6 +221,25 @@ export class RestaurantService {
       return { ok: true, results: restaurants, totalPages, totalResults };
     } catch {
       return { ok: false, error: 'Could not load restaurants' };
+    }
+  }
+
+  // 搜尋餐廳
+  async findRestaurantById({
+    restaurantId
+  }: RestaurantInput): Promise<RestaurantOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne({
+        where: { id: restaurantId }
+      });
+
+      if (!restaurant) {
+        return { ok: false, error: 'Restaurant not found' };
+      }
+
+      return { ok: true, restaurant };
+    } catch {
+      return { ok: false, error: 'Could not find restaurant' };
     }
   }
 }

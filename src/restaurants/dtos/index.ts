@@ -1,3 +1,4 @@
+export * from './restaurant.dto';
 export * from './restaurants.dto';
 export * from './create-restaurant.dto';
 export * from './edit-restaurant.dto';
