@@ -1,4 +1,3 @@
-import { CreateDishOutput, CreateDishInput } from './dtos/create-dish.dto';
 import {
   Query,
   Args,
@@ -24,7 +23,13 @@ import {
   DeleteRestaurantOutput,
   AllCategoriesOutput,
   CategoryInput,
-  CategoryOutput
+  CategoryOutput,
+  CreateDishOutput,
+  CreateDishInput,
+  DeleteDishInput,
+  DeleteDishOutput,
+  EditDishOutput,
+  EditDishInput
 } from './dtos';
 import { RestaurantService } from './restaurants.service';
 import { AuthUser } from '../auth/auth-user.decorator';
@@ -135,7 +140,27 @@ export class DishResolver {
   createDish(
     @AuthUser() owner: User,
     @Args('input') createDishInput: CreateDishInput
-  ) {
+  ): Promise<CreateDishOutput> {
     return this.restaurantService.createDish(owner, createDishInput);
+  }
+
+  // 編輯菜單
+  @Mutation(type => EditDishOutput)
+  @Role(['Owner'])
+  editDish(
+    @AuthUser() owner: User,
+    @Args('input') editDishInput: EditDishInput
+  ): Promise<EditDishOutput> {
+    return this.restaurantService.editDish(owner, editDishInput);
+  }
+
+  // 刪除菜單
+  @Mutation(type => DeleteDishOutput)
+  @Role(['Owner'])
+  deleteDish(
+    @AuthUser() owner: User,
+    @Args('input') deleteDishInput: DeleteDishInput
+  ): Promise<DeleteDishOutput> {
+    return this.restaurantService.deleteDish(owner, deleteDishInput);
   }
 }

@@ -14,10 +14,14 @@ import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
   AllCategoriesOutput,
+  CategoryInput,
+  CategoryOutput,
   CreateDishInput,
   CreateDishOutput,
-  CategoryInput,
-  CategoryOutput
+  EditDishInput,
+  EditDishOutput,
+  DeleteDishInput,
+  DeleteDishOutput
 } from './dtos';
 import { User } from './../users/entities/user.entity';
 import { Injectable } from '@nestjs/common';
@@ -278,6 +282,29 @@ export class RestaurantService {
     }
   }
 
+  // 檢查菜單是否存在、並是否是餐廳擁有者
+  async checkDishAndOwner(
+    ownerId: number,
+    dishId: number
+  ): Promise<CoreOutput & { dish?: Dish }> {
+    const dish = await this.dishes.findOne({
+      where: { id: dishId },
+      relations: ['restaurant']
+    });
+
+    // 菜單未存在
+    if (!dish) {
+      return { ok: false, error: 'Dish not found' };
+    }
+
+    // 非餐廳擁有者
+    if (dish.restaurant.ownerId !== ownerId) {
+      return { ok: false, error: "You can't do that." };
+    }
+
+    return { ok: true, dish };
+  }
+
   // 新增菜單
   async createDish(
     owner: User,
@@ -304,6 +331,41 @@ export class RestaurantService {
       return { ok: true };
     } catch {
       return { ok: false, error: 'Could not create dish' };
+    }
+  }
+
+  // 編輯菜單
+  async editDish(
+    owner: User,
+    editDishInput: EditDishInput
+  ): Promise<EditDishOutput> {
+    try {
+      const dish = await this.dishes.findOne({
+        where: { id: editDishInput.dishId },
+        relations: ['restaurant']
+      });
+
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'Could not edit dish' };
+    }
+  }
+
+  // 刪除菜單
+  async deleteDish(
+    owner: User,
+    { dishId }: DeleteDishInput
+  ): Promise<DeleteDishOutput> {
+    try {
+      const { dish } = await this.checkDishAndOwner(owner.id, dishId);
+
+      if (dish) {
+        await this.dishes.delete(dishId);
+      }
+
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'Could not delete dish' };
     }
   }
 }
