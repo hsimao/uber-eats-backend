@@ -1,4 +1,4 @@
-import { Category } from './entities/category.entity';
+import { CreateDishOutput, CreateDishInput } from './dtos/create-dish.dto';
 import {
   Query,
   Args,
@@ -8,7 +8,7 @@ import {
   Parent
 } from '@nestjs/graphql';
 import { User } from './../users/entities/user.entity';
-import { Restaurant } from './entities/restaurant.entity';
+import { Restaurant, Category, Dish } from './entities';
 import {
   RestaurantsOutput,
   RestaurantsInput,
@@ -121,5 +121,21 @@ export class CategoryResolver {
     @Args('input') categoryInput: CategoryInput
   ): Promise<CategoryOutput> {
     return this.restaurantService.findCategoryBySlug(categoryInput);
+  }
+}
+
+// 餐點
+@Resolver(of => Dish)
+export class DishResolver {
+  constructor(private readonly restaurantService: RestaurantService) {}
+
+  // 新增菜單
+  @Mutation(type => CreateDishOutput)
+  @Role(['Owner'])
+  createDish(
+    @AuthUser() owner: User,
+    @Args('input') createDishInput: CreateDishInput
+  ) {
+    return this.restaurantService.createDish(owner, createDishInput);
   }
 }
