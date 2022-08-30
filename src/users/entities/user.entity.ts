@@ -1,3 +1,4 @@
+import { Order } from './../../orders/entities/order.entity';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
 import {
   Field,
@@ -48,6 +49,16 @@ export class User extends CoreEntity {
   @Field(type => [Restaurant])
   @OneToMany(type => Restaurant, restaurant => restaurant.owner)
   restaurants: Restaurant[];
+
+  // 一般用戶關聯訂單
+  @Field(type => [Order])
+  @OneToMany(type => Order, order => order.customer)
+  orders: Order[];
+
+  // 司機關聯訂單
+  @Field(type => [Order])
+  @OneToMany(type => Order, order => order.driver)
+  rides: Order[];
 
   // 儲存到 DB 前先加密 password
   @BeforeInsert()

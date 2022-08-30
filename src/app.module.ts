@@ -6,11 +6,13 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { Order } from './orders/entities/order.entity';
 import { User, Verification } from './users/entities';
 import { Category, Restaurant, Dish } from './restaurants/entities';
 import { JwtModule } from './jwt/jwt.module';
 import { EmailModule } from './email/email.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -40,7 +42,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: process.env.NODE_ENV !== 'prod',
-      entities: [User, Verification, Restaurant, Category, Dish]
+      entities: [User, Verification, Restaurant, Category, Dish, Order]
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -63,7 +65,8 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
     }),
     AuthModule,
     UsersModule,
-    RestaurantsModule
+    RestaurantsModule,
+    OrdersModule
   ],
   controllers: [],
   providers: []
