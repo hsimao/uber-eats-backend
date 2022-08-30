@@ -137,7 +137,7 @@ export class RestaurantService {
       };
 
       // 更新餐廳
-      await this.restaurants.save([newRestaurantData]);
+      await this.restaurants.save(newRestaurantData);
       return { ok: true };
     } catch (error) {
       return { ok: false, error: 'Could not edit Restaurant' };
@@ -340,13 +340,24 @@ export class RestaurantService {
     editDishInput: EditDishInput
   ): Promise<EditDishOutput> {
     try {
-      const dish = await this.dishes.findOne({
-        where: { id: editDishInput.dishId },
-        relations: ['restaurant']
-      });
+      const { error, dish } = await this.checkDishAndOwner(
+        owner.id,
+        editDishInput.dishId
+      );
+
+      if (error) return { ok: false, error };
+
+      if (dish) {
+        const newDishData = {
+          id: editDishInput.dishId,
+          ...editDishInput
+        };
+        await this.dishes.save(newDishData);
+      }
 
       return { ok: true };
-    } catch {
+    } catch (err) {
+      console.log(err);
       return { ok: false, error: 'Could not edit dish' };
     }
   }
@@ -357,7 +368,9 @@ export class RestaurantService {
     { dishId }: DeleteDishInput
   ): Promise<DeleteDishOutput> {
     try {
-      const { dish } = await this.checkDishAndOwner(owner.id, dishId);
+      const { error, dish } = await this.checkDishAndOwner(owner.id, dishId);
+
+      if (error) return { ok: false, error };
 
       if (dish) {
         await this.dishes.delete(dishId);
