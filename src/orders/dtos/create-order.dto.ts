@@ -3,7 +3,7 @@ import { CoreOutput } from './../../common/dtos/output.dto';
 import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
 
 @InputType()
-export class CreateOrderInput extends PickType(Order, ['dishes']) {
+export class CreateOrderInput extends PickType(Order, ['items']) {
   @Field(type => Number)
   restaurantId: number;
 }

@@ -1,3 +1,5 @@
+import { IsEnum, IsNumber } from 'class-validator';
+import { OrderItem } from './order-item.entity';
 import { Dish } from './../../restaurants/entities/dish.entity';
 import { Restaurant } from './../../restaurants/entities/restaurant.entity';
 import { User } from './../../users/entities/user.entity';
@@ -48,18 +50,20 @@ export class Order extends CoreEntity {
   restaurant: Restaurant;
 
   // 餐點
-  @Field(type => [Dish])
-  @ManyToMany(type => Dish)
+  @Field(type => [OrderItem])
+  @ManyToMany(type => OrderItem)
   @JoinTable() // 可從訂單中看到菜單
-  dishes: Dish[];
+  items: OrderItem[];
 
   // 訂單總金額
   @Field(type => Number, { nullable: true })
   @Column({ nullable: true })
+  @IsNumber()
   total?: number;
 
   // 訂單狀態
   @Field(type => OrderStatus)
   @Column({ type: 'enum', enum: OrderStatus })
+  @IsEnum(OrderStatus)
   status: OrderStatus;
 }
