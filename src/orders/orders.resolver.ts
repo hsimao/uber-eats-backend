@@ -10,12 +10,13 @@ import { Role } from 'src/auth/role.decorator';
 export class OrdersResolver {
   constructor(private readonly ordersService: OrdersService) {}
 
+  // 新增訂單
   @Mutation(returns => CreateOrderOutput)
   @Role(['Client'])
   async createOrder(
     @AuthUser() customer: User,
     @Args('input') createOrderInput: CreateOrderInput
   ): Promise<CreateOrderOutput> {
-    return { ok: true };
+    return this.ordersService.createOrder(customer, createOrderInput);
   }
 }
