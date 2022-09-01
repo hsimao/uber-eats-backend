@@ -54,9 +54,9 @@ export class Order extends CoreEntity {
   dishes: Dish[];
 
   // 訂單總金額
-  @Field(type => Number)
-  @Column()
-  total: number;
+  @Field(type => Number, { nullable: true })
+  @Column({ nullable: true })
+  total?: number;
 
   // 訂單狀態
   @Field(type => OrderStatus)
